@@ -1,0 +1,45 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum EssayStatus {
+  CREATED
+  WAITING_REVIEW
+  REVIEWED
+  FINISHED
+}
+
+model Student {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String  @unique
+  password String
+  role     String
+  essays   Essay[] // One-to-many relationship: A student can have many essays
+}
+
+model Teacher {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String  @unique
+  password String
+  role     String
+  essays   Essay[] // One-to-many relationship: A teacher can review many essays
+}
+
+model Essay {
+  id               String      @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  content          String
+  status           EssayStatus
+  student          Student     @relation(fields: [studentId], references: [id]) // Foreign key to Student
+  studentId        String      @db.ObjectId
+  teacher          Teacher?    @relation(fields: [teacherId], references: [id]) // Optional foreign key to Teacher
+  teacherId        String?     @db.ObjectId // Nullable foreign key for Teacher
+  adjustmentPoints String?
+}
